@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: library
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - library-network
+
+  backend:
+    build: ./backend
+    container_name: backend
+    ports:
+      - "50051:50051"
+    depends_on:
+      - postgres
+    networks:
+      - library-network
+
+  gateway:
+    build: ./gateway
+    container_name: gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - library-network
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "8080:3000"
+    depends_on:
+      - gateway
+    networks:
+      - library-network
+
+networks:
+  library-network:
+    driver: bridge
