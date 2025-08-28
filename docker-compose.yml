@@ -11,7 +11,7 @@ services:
     volumes:
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "5433:5432"
+      - "5432:5432"
     networks:
       - library-network
 
@@ -30,6 +30,8 @@ services:
   gateway:
     build: ./gateway
     container_name: gateway
+    environment:
+      - GRPC_DNS_RESOLVER=ares
     ports:
       - "3000:3000"
     depends_on:
