@@ -22,10 +22,13 @@ services:
       - ./backend/.env
     ports:
       - "50051:50051"
-    depends_on:
-      - postgres
     networks:
       - library-network
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=localhost:50051"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   gateway:
     build:
@@ -53,16 +56,20 @@ services:
     networks:
       - library-network
 
+  grpcui:
+    image: fullstorydev/grpcui:latest
+    container_name: grpcui
+    command: ["-plaintext", "-port", "8081", "backend:50051"]
+    ports:
+      - "8081:8081"
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - library-network
+
+
 networks:
   library-network:
     driver: bridge
 
-  grpcui:
-    image: fullstorydev/grpcui
-    ports:
-      - "8081:8080"
-    command: -plaintext backend:50051
-    depends_on:
-      - backend
-    networks:
-      - library-network
