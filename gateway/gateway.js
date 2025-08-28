@@ -9,7 +9,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-const PROTO_PATH = __dirname + '/../proto/library.proto';
+const PROTO_PATH = __dirname + '/proto/library.proto';
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
     keepCase: true,
     longs: String,
