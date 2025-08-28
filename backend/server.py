@@ -83,6 +83,57 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
         finally:
             self.release_db_connection(conn)
 
+    def GetMember(self, request, context):
+        conn = self.get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT id, name, email, phone FROM members WHERE id = %s", (request.id,))
+                member = cursor.fetchone()
+                if member:
+                    return library_pb2.Member(id=str(member[0]), name=member[1], email=member[2], phone=member[3])
+                else:
+                    context.set_code(grpc.StatusCode.NOT_FOUND)
+                    context.set_details("Member not found")
+                    return library_pb2.Member()
+        finally:
+            self.release_db_connection(conn)
+
+    def ListMembers(self, request, context):
+        conn = self.get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT id, name, email, phone FROM members")
+                members = cursor.fetchall()
+                member_list = []
+                for member in members:
+                    member_list.append(library_pb2.Member(id=str(member[0]), name=member[1], email=member[2], phone=member[3]))
+                return library_pb2.ListMembersResponse(members=member_list)
+        finally:
+            self.release_db_connection(conn)
+
+    def UpdateMember(self, request, context):
+        conn = self.get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE members SET name = %s, email = %s, phone = %s WHERE id = %s",
+                    (request.name, request.email, request.phone, request.id)
+                )
+                conn.commit()
+                return library_pb2.Member(id=request.id, name=request.name, email=request.email, phone=request.phone)
+        finally:
+            self.release_db_connection(conn)
+
+    def DeleteMember(self, request, context):
+        conn = self.get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("DELETE FROM members WHERE id = %s", (request.id,))
+                conn.commit()
+                return library_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
+        finally:
+            self.release_db_connection(conn)
+
     def BorrowBook(self, request, context):
         conn = self.get_db_connection()
         try:
