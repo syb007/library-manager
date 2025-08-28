@@ -1,0 +1,7 @@
+ALTER TABLE books
+ADD COLUMN quantity INT NOT NULL DEFAULT 1,
+ADD COLUMN quantity_available INT NOT NULL DEFAULT 1,
+DROP COLUMN available;
+
+ALTER TABLE borrowings
+ADD COLUMN due_date TIMESTAMP;
