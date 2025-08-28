@@ -33,9 +33,12 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
         conn = self.get_db_connection()
         try:
             with conn.cursor() as cursor:
+                # Validate quantity, default to 1 if not provided or invalid
+                quantity = request.quantity if request.quantity > 0 else 1
+
                 cursor.execute(
                     "INSERT INTO books (title, author, isbn, published_year, quantity, quantity_available) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
-                    (request.title, request.author, request.isbn, request.published_year, request.quantity, request.quantity)
+                    (request.title, request.author, request.isbn, request.published_year, quantity, quantity)
                 )
                 book_id = cursor.fetchone()[0]
                 conn.commit()
@@ -45,8 +48,8 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
                     author=request.author,
                     isbn=request.isbn,
                     published_year=request.published_year,
-                    quantity=request.quantity,
-                    quantity_available=request.quantity
+                    quantity=quantity,
+                    quantity_available=quantity
                 )
         finally:
             self.release_db_connection(conn)

@@ -67,7 +67,7 @@ const AddBook = () => {
                     type="number"
                     placeholder="Quantity"
                     value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
+                    onChange={(e) => setQuantity(parseInt(e.target.value, 10) || 1)}
                     required
                     min="1"
                 />
