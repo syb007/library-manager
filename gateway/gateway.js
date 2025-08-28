@@ -63,6 +63,47 @@ app.post('/members', (req, res) => {
     });
 });
 
+app.get('/members', (req, res) => {
+    client.listMembers({}, (error, response) => {
+        if (error) {
+            res.status(500).send(error);
+        } else {
+            res.send(response);
+        }
+    });
+});
+
+app.get('/members/:id', (req, res) => {
+    client.getMember({ id: req.params.id }, (error, response) => {
+        if (error) {
+            res.status(500).send(error);
+        } else {
+            res.send(response);
+        }
+    });
+});
+
+app.put('/members/:id', (req, res) => {
+    const member = { id: req.params.id, ...req.body };
+    client.updateMember(member, (error, response) => {
+        if (error) {
+            res.status(500).send(error);
+        } else {
+            res.send(response);
+        }
+    });
+});
+
+app.delete('/members/:id', (req, res) => {
+    client.deleteMember({ id: req.params.id }, (error, response) => {
+        if (error) {
+            res.status(500).send(error);
+        } else {
+            res.send(response);
+        }
+    });
+});
+
 // Borrowing endpoints
 app.post('/borrow', (req, res) => {
     client.borrowBook(req.body, (error, response) => {
