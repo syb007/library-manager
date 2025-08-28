@@ -106,6 +106,16 @@ class LibraryStub(object):
                 request_serializer=library__pb2.ListBorrowedBooksRequest.SerializeToString,
                 response_deserializer=library__pb2.ListBorrowedBooksResponse.FromString,
                 _registered_method=True)
+        self.GetBookDetails = channel.unary_unary(
+                '/library.Library/GetBookDetails',
+                request_serializer=library__pb2.GetBookRequest.SerializeToString,
+                response_deserializer=library__pb2.GetBookDetailsResponse.FromString,
+                _registered_method=True)
+        self.GetMemberDetails = channel.unary_unary(
+                '/library.Library/GetMemberDetails',
+                request_serializer=library__pb2.GetMemberRequest.SerializeToString,
+                response_deserializer=library__pb2.GetMemberDetailsResponse.FromString,
+                _registered_method=True)
 
 
 class LibraryServicer(object):
@@ -199,6 +209,19 @@ class LibraryServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetBookDetails(self, request, context):
+        """Detail RPCs
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetMemberDetails(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_LibraryServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -271,6 +294,16 @@ def add_LibraryServicer_to_server(servicer, server):
                     servicer.ListBorrowedBooks,
                     request_deserializer=library__pb2.ListBorrowedBooksRequest.FromString,
                     response_serializer=library__pb2.ListBorrowedBooksResponse.SerializeToString,
+            ),
+            'GetBookDetails': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetBookDetails,
+                    request_deserializer=library__pb2.GetBookRequest.FromString,
+                    response_serializer=library__pb2.GetBookDetailsResponse.SerializeToString,
+            ),
+            'GetMemberDetails': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMemberDetails,
+                    request_deserializer=library__pb2.GetMemberRequest.FromString,
+                    response_serializer=library__pb2.GetMemberDetailsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -652,6 +685,60 @@ class Library(object):
             '/library.Library/ListBorrowedBooks',
             library__pb2.ListBorrowedBooksRequest.SerializeToString,
             library__pb2.ListBorrowedBooksResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetBookDetails(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/library.Library/GetBookDetails',
+            library__pb2.GetBookRequest.SerializeToString,
+            library__pb2.GetBookDetailsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetMemberDetails(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/library.Library/GetMemberDetails',
+            library__pb2.GetMemberRequest.SerializeToString,
+            library__pb2.GetMemberDetailsResponse.FromString,
             options,
             channel_credentials,
             insecure,
