@@ -56,3 +56,13 @@ services:
 networks:
   library-network:
     driver: bridge
+
+  grpcui:
+    image: fullstorydev/grpcui
+    ports:
+      - "8081:8080"
+    command: -plaintext backend:50051
+    depends_on:
+      - backend
+    networks:
+      - library-network
