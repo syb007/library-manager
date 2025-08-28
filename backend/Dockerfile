@@ -13,8 +13,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application's code to the working directory
 COPY . .
 
-# Copy the entrypoint script
+# Copy the entrypoint script and fix line endings
 COPY entrypoint.sh .
+RUN sed -i 's/\r$//' ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 
 # Make port 50051 available to the world outside this container
