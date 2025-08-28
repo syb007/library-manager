@@ -14,7 +14,9 @@ services:
       - library-network
 
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: backend
     env_file:
       - ./backend/.env
@@ -26,7 +28,9 @@ services:
       - library-network
 
   gateway:
-    build: ./gateway
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
     container_name: gateway
     environment:
       - GRPC_DNS_RESOLVER=ares

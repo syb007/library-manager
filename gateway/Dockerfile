@@ -1,20 +1,17 @@
-# Use an official Node.js runtime as a parent image
 FROM node:16
-
-# Set the working directory in the container
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
+# Copy package.json from the gateway directory
+COPY gateway/package*.json ./
 
-# Install any needed packages specified in package.json
+# Install dependencies
 RUN npm install
 
-# Copy the rest of the application's code to the working directory
-COPY . .
+# Copy the gateway source code
+COPY gateway/ .
 
-# Make port 3000 available to the world outside this container
+# Copy the proto definitions
+COPY proto/ /usr/src/app/proto/
+
 EXPOSE 3000
-
-# Run gateway.js when the container launches
 CMD ["node", "gateway.js"]
