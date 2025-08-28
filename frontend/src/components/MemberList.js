@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../api';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     IconButton, Tooltip, Typography, Grid, Box, TextField, Button
@@ -20,7 +20,7 @@ const MemberList = () => {
 
     const fetchMembers = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/members');
+            const response = await apiClient.get('/members');
             setMembers(response.data.members || []);
         } catch (error) {
             console.error('Error fetching members:', error);
@@ -34,7 +34,7 @@ const MemberList = () => {
     const handleAddMember = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3000/members', { name, email, phone });
+            await apiClient.post('/members', { name, email, phone });
             alert('Member added successfully!');
             setName('');
             setEmail('');
@@ -49,7 +49,7 @@ const MemberList = () => {
     const handleDeleteMember = async (id) => {
         if (window.confirm('Are you sure you want to delete this member?')) {
             try {
-                await axios.delete(`http://localhost:3000/members/${id}`);
+                await apiClient.delete(`/members/${id}`);
                 alert('Member deleted successfully!');
                 fetchMembers();
             } catch (error) {
@@ -62,7 +62,7 @@ const MemberList = () => {
     const handleEditClick = (member) => setEditingMember(member);
     const handleDetailsClick = async (memberId) => {
         try {
-            const response = await axios.get(`http://localhost:3000/members/${memberId}/details`);
+            const response = await apiClient.get(`/members/${memberId}/details`);
             setDetailsData(response.data);
         } catch (error) {
             console.error('Error fetching member details:', error);

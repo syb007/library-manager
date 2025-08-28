@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import apiClient from '../api';
 import { Paper, Box, Typography, TextField, Button, Grid } from '@mui/material';
 
 const BorrowBook = () => {
@@ -11,7 +11,7 @@ const BorrowBook = () => {
     const handleBorrow = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3000/borrow', {
+            await apiClient.post('/borrow', {
                 book_id: borrowBookId,
                 member_id: borrowMemberId,
             });
@@ -28,7 +28,7 @@ const BorrowBook = () => {
     const handleReturn = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3000/return', {
+            await apiClient.post('/return', {
                 book_id: returnBookId,
                 member_id: returnMemberId,
             });

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import apiClient from '../api';
 import { Paper, Box, Typography, TextField, Button } from '@mui/material';
 
 const AddBook = () => {
@@ -12,7 +12,7 @@ const AddBook = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3000/books', {
+            await apiClient.post('/books', {
                 title,
                 author,
                 isbn,

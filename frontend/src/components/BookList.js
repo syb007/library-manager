@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../api';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     IconButton, Tooltip, Typography
@@ -20,7 +20,7 @@ const BookList = () => {
 
     const fetchBooks = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/books');
+            const response = await apiClient.get('/books');
             setBooks(response.data.books || []);
         } catch (error) {
             console.error('Error fetching books:', error);
@@ -35,7 +35,7 @@ const BookList = () => {
     const handleAdjustStockClick = (book) => setAdjustingStockBook(book);
     const handleDetailsClick = async (bookId) => {
         try {
-            const response = await axios.get(`http://localhost:3000/books/${bookId}/details`);
+            const response = await apiClient.get(`/books/${bookId}/details`);
             setDetailsData(response.data);
         } catch (error) {
             console.error('Error fetching book details:', error);
@@ -56,7 +56,7 @@ const BookList = () => {
     const handleDeleteBook = async (id) => {
         if (window.confirm('Are you sure you want to delete this book? This action cannot be undone.')) {
             try {
-                await axios.delete(`http://localhost:3000/books/${id}`);
+                await apiClient.delete(`/books/${id}`);
                 alert('Book deleted successfully!');
                 fetchBooks();
             } catch (error) {

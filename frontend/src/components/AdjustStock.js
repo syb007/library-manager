@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../api';
 import {
-    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+    Dialog, DialogActions, DialogContent, DialogTitle,
     Button, TextField, Typography
 } from '@mui/material';
 
@@ -21,7 +21,7 @@ const AdjustStock = ({ book, onClose, onBookUpdated }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`http://localhost:3000/books/${book.id}/stock`, {
+            await apiClient.post(`/books/${book.id}/stock`, {
                 new_quantity: parseInt(newQuantity),
             });
             alert('Stock updated successfully!');

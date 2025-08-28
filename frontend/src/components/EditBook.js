@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../api';
 import {
     Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-    Button, TextField, Box
+    Button, TextField
 } from '@mui/material';
 
 const EditBook = ({ book, onClose, onBookUpdated }) => {
@@ -27,7 +27,7 @@ const EditBook = ({ book, onClose, onBookUpdated }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:3000/books/${book.id}`, {
+            await apiClient.put(`/books/${book.id}`, {
                 title,
                 author,
                 isbn,

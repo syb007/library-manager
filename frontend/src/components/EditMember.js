@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../api';
 import {
     Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
     Button, TextField
@@ -25,7 +25,7 @@ const EditMember = ({ member, onClose, onMemberUpdated }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:3000/members/${member.id}`, {
+            await apiClient.put(`/members/${member.id}`, {
                 name,
                 email,
                 phone,
