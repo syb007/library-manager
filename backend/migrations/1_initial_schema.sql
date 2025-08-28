@@ -1,4 +1,4 @@
-CREATE TABLE books (
+CREATE TABLE IF NOT EXISTS books (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   author VARCHAR(255) NOT NULL,
@@ -7,14 +7,14 @@ CREATE TABLE books (
   available BOOLEAN DEFAULT TRUE
 );
 
-CREATE TABLE members (
+CREATE TABLE IF NOT EXISTS members (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
   phone VARCHAR(255)
 );
 
-CREATE TABLE borrowings (
+CREATE TABLE IF NOT EXISTS borrowings (
   id SERIAL PRIMARY KEY,
   book_id INT REFERENCES books(id),
   member_id INT REFERENCES members(id),
