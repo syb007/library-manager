@@ -74,6 +74,17 @@ app.delete('/books/:id', (req, res) => {
     });
 });
 
+app.post('/books/:id/stock', (req, res) => {
+    const request = { book_id: req.params.id, new_quantity: req.body.new_quantity };
+    client.adjustBookQuantity(request, (error, response) => {
+        if (error) {
+            res.status(500).send(error);
+        } else {
+            res.send(response);
+        }
+    });
+});
+
 // Member endpoints
 app.post('/members', (req, res) => {
     client.createMember(req.body, (error, response) => {

@@ -56,6 +56,11 @@ class LibraryStub(object):
                 request_serializer=library__pb2.UpdateBookRequest.SerializeToString,
                 response_deserializer=library__pb2.Book.FromString,
                 _registered_method=True)
+        self.AdjustBookQuantity = channel.unary_unary(
+                '/library.Library/AdjustBookQuantity',
+                request_serializer=library__pb2.AdjustBookQuantityRequest.SerializeToString,
+                response_deserializer=library__pb2.Book.FromString,
+                _registered_method=True)
         self.DeleteBook = channel.unary_unary(
                 '/library.Library/DeleteBook',
                 request_serializer=library__pb2.DeleteBookRequest.SerializeToString,
@@ -127,6 +132,12 @@ class LibraryServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def UpdateBook(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AdjustBookQuantity(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -209,6 +220,11 @@ def add_LibraryServicer_to_server(servicer, server):
             'UpdateBook': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateBook,
                     request_deserializer=library__pb2.UpdateBookRequest.FromString,
+                    response_serializer=library__pb2.Book.SerializeToString,
+            ),
+            'AdjustBookQuantity': grpc.unary_unary_rpc_method_handler(
+                    servicer.AdjustBookQuantity,
+                    request_deserializer=library__pb2.AdjustBookQuantityRequest.FromString,
                     response_serializer=library__pb2.Book.SerializeToString,
             ),
             'DeleteBook': grpc.unary_unary_rpc_method_handler(
@@ -365,6 +381,33 @@ class Library(object):
             target,
             '/library.Library/UpdateBook',
             library__pb2.UpdateBookRequest.SerializeToString,
+            library__pb2.Book.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def AdjustBookQuantity(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/library.Library/AdjustBookQuantity',
+            library__pb2.AdjustBookQuantityRequest.SerializeToString,
             library__pb2.Book.FromString,
             options,
             channel_credentials,

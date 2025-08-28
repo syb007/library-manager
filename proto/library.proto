@@ -12,6 +12,7 @@ service Library {
   rpc GetBook(GetBookRequest) returns (Book);
   rpc ListBooks(ListBooksRequest) returns (ListBooksResponse);
   rpc UpdateBook(UpdateBookRequest) returns (Book);
+  rpc AdjustBookQuantity(AdjustBookQuantityRequest) returns (Book);
   rpc DeleteBook(DeleteBookRequest) returns (google.protobuf.Empty);
 
   // Member RPCs
@@ -86,6 +87,11 @@ message UpdateBookRequest {
   string author = 3;
   string isbn = 4;
   int32 published_year = 5;
+}
+
+message AdjustBookQuantityRequest {
+  string book_id = 1;
+  int32 new_quantity = 2;
 }
 
 message DeleteBookRequest {

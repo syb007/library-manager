@@ -51,6 +51,55 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
         finally:
             self.release_db_connection(conn)
 
+    def AdjustBookQuantity(self, request, context):
+        conn = self.get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                # Lock the book row for update
+                cursor.execute("SELECT quantity, quantity_available FROM books WHERE id = %s FOR UPDATE", (request.book_id,))
+                book_quantities = cursor.fetchone()
+                if not book_quantities:
+                    context.set_code(grpc.StatusCode.NOT_FOUND)
+                    context.set_details("Book not found")
+                    return library_pb2.Book()
+
+                old_quantity, old_quantity_available = book_quantities
+                on_loan = old_quantity - old_quantity_available
+
+                if request.new_quantity < on_loan:
+                    context.set_code(grpc.StatusCode.FAILED_PRECONDITION)
+                    context.set_details(f"New quantity cannot be less than the number of books currently on loan ({on_loan}).")
+                    return library_pb2.Book()
+
+                new_quantity_available = request.new_quantity - on_loan
+
+                cursor.execute(
+                    "UPDATE books SET quantity = %s, quantity_available = %s WHERE id = %s",
+                    (request.new_quantity, new_quantity_available, request.book_id)
+                )
+
+                # Fetch the full book to return it
+                cursor.execute("SELECT id, title, author, isbn, published_year, quantity, quantity_available FROM books WHERE id = %s", (request.book_id,))
+                book = cursor.fetchone()
+                conn.commit()
+
+                return library_pb2.Book(
+                    id=str(book[0]),
+                    title=book[1],
+                    author=book[2],
+                    isbn=book[3],
+                    published_year=book[4],
+                    quantity=book[5],
+                    quantity_available=book[6]
+                )
+        except Exception as e:
+            conn.rollback()
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(f"An error occurred: {e}")
+            return library_pb2.Book()
+        finally:
+            self.release_db_connection(conn)
+
     def GetBook(self, request, context):
         conn = self.get_db_connection()
         try:

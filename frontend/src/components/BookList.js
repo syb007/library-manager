@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './BookList.css';
 import EditBook from './EditBook';
+import AdjustStock from './AdjustStock';
 
 const BookList = () => {
     const [books, setBooks] = useState([]);
     const [editingBook, setEditingBook] = useState(null);
+    const [adjustingStockBook, setAdjustingStockBook] = useState(null);
 
     const fetchBooks = async () => {
         try {
@@ -24,8 +26,13 @@ const BookList = () => {
         setEditingBook(book);
     };
 
+    const handleAdjustStockClick = (book) => {
+        setAdjustingStockBook(book);
+    };
+
     const handleCloseModal = () => {
         setEditingBook(null);
+        setAdjustingStockBook(null);
     };
 
     const handleBookUpdated = () => {
@@ -61,6 +68,7 @@ const BookList = () => {
                             <td>{book.quantity_available}</td>
                             <td>
                                 <button onClick={() => handleEditClick(book)}>Edit</button>
+                                <button onClick={() => handleAdjustStockClick(book)}>Adjust Stock</button>
                                 <button onClick={() => handleDeleteBook(book.id)}>Delete</button>
                             </td>
                         </tr>
@@ -71,6 +79,14 @@ const BookList = () => {
             {editingBook && (
                 <EditBook
                     book={editingBook}
+                    onClose={handleCloseModal}
+                    onBookUpdated={handleBookUpdated}
+                />
+            )}
+
+            {adjustingStockBook && (
+                <AdjustStock
+                    book={adjustingStockBook}
                     onClose={handleCloseModal}
                     onBookUpdated={handleBookUpdated}
                 />
