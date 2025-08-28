@@ -52,6 +52,27 @@ app.get('/books', (req, res) => {
     });
 });
 
+app.put('/books/:id', (req, res) => {
+    const book = { id: req.params.id, ...req.body };
+    client.updateBook(book, (error, response) => {
+        if (error) {
+            res.status(500).send(error);
+        } else {
+            res.send(response);
+        }
+    });
+});
+
+app.delete('/books/:id', (req, res) => {
+    client.deleteBook({ id: req.params.id }, (error, response) => {
+        if (error) {
+            res.status(500).send(error);
+        } else {
+            res.send(response);
+        }
+    });
+});
+
 // Member endpoints
 app.post('/members', (req, res) => {
     client.createMember(req.body, (error, response) => {

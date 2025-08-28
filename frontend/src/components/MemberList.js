@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './MemberList.css';
+import EditMember from './EditMember';
 
 const MemberList = () => {
     const [members, setMembers] = useState([]);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
+    const [editingMember, setEditingMember] = useState(null);
 
     const fetchMembers = async () => {
         try {
@@ -45,6 +47,18 @@ const MemberList = () => {
             console.error('Error deleting member:', error);
             alert('Failed to delete member.');
         }
+    };
+
+    const handleEditClick = (member) => {
+        setEditingMember(member);
+    };
+
+    const handleCloseModal = () => {
+        setEditingMember(null);
+    };
+
+    const handleMemberUpdated = () => {
+        fetchMembers(); // Refresh the list after an update
     };
 
     return (
@@ -97,6 +111,7 @@ const MemberList = () => {
                                 <td>{member.email}</td>
                                 <td>{member.phone}</td>
                                 <td>
+                                    <button onClick={() => handleEditClick(member)}>Edit</button>
                                     <button onClick={() => handleDeleteMember(member.id)}>Delete</button>
                                 </td>
                             </tr>
@@ -104,6 +119,14 @@ const MemberList = () => {
                     </tbody>
                 </table>
             </div>
+
+            {editingMember && (
+                <EditMember
+                    member={editingMember}
+                    onClose={handleCloseModal}
+                    onMemberUpdated={handleMemberUpdated}
+                />
+            )}
         </div>
     );
 };

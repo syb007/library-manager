@@ -95,6 +95,43 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
         finally:
             self.release_db_connection(conn)
 
+    def UpdateBook(self, request, context):
+        conn = self.get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                # Note: This implementation does not update the quantity fields.
+                # A more complex process would be needed for that (e.g., stock adjustment).
+                cursor.execute(
+                    "UPDATE books SET title = %s, author = %s, isbn = %s, published_year = %s WHERE id = %s",
+                    (request.title, request.author, request.isbn, request.published_year, request.id)
+                )
+                conn.commit()
+                # To return the full book object, we need to fetch it again
+                cursor.execute("SELECT id, title, author, isbn, published_year, quantity, quantity_available FROM books WHERE id = %s", (request.id,))
+                book = cursor.fetchone()
+                return library_pb2.Book(
+                    id=str(book[0]),
+                    title=book[1],
+                    author=book[2],
+                    isbn=book[3],
+                    published_year=book[4],
+                    quantity=book[5],
+                    quantity_available=book[6]
+                )
+        finally:
+            self.release_db_connection(conn)
+
+    def DeleteBook(self, request, context):
+        conn = self.get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                # A more robust implementation would check for active borrowings first.
+                cursor.execute("DELETE FROM books WHERE id = %s", (request.id,))
+                conn.commit()
+                return library_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
+        finally:
+            self.release_db_connection(conn)
+
     # --- Member RPCs ---
     def CreateMember(self, request, context):
         conn = self.get_db_connection()

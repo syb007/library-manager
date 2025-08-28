@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './BookList.css';
+import EditBook from './EditBook';
 
 const BookList = () => {
     const [books, setBooks] = useState([]);
+    const [editingBook, setEditingBook] = useState(null);
 
     const fetchBooks = async () => {
         try {
@@ -17,6 +19,18 @@ const BookList = () => {
     useEffect(() => {
         fetchBooks();
     }, []);
+
+    const handleEditClick = (book) => {
+        setEditingBook(book);
+    };
+
+    const handleCloseModal = () => {
+        setEditingBook(null);
+    };
+
+    const handleBookUpdated = () => {
+        fetchBooks(); // Refresh the list after an update
+    };
 
     return (
         <div className="book-list-container">
@@ -32,6 +46,7 @@ const BookList = () => {
                         <th>Published Year</th>
                         <th>Total Copies</th>
                         <th>Available</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,10 +59,21 @@ const BookList = () => {
                             <td>{book.published_year}</td>
                             <td>{book.quantity}</td>
                             <td>{book.quantity_available}</td>
+                            <td>
+                                <button onClick={() => handleEditClick(book)}>Edit</button>
+                            </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
+
+            {editingBook && (
+                <EditBook
+                    book={editingBook}
+                    onClose={handleCloseModal}
+                    onBookUpdated={handleBookUpdated}
+                />
+            )}
         </div>
     );
 };
