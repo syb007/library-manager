@@ -477,12 +477,22 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
             self.release_db_connection(conn)
 
 
+from grpc_reflection.v1alpha import reflection
+
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     library_pb2_grpc.add_LibraryServicer_to_server(LibraryServicer(), server)
+
+    # Enable server reflection
+    SERVICE_NAMES = (
+        library_pb2.DESCRIPTOR.services_by_name['Library'].full_name,
+        reflection.SERVICE_NAME,
+    )
+    reflection.enable_server_reflection(SERVICE_NAMES, server)
+
     server.add_insecure_port('[::]:50051')
     server.start()
-    print("Server started on port 50051")
+    print("Server started on port 50051, with reflection enabled.")
     server.wait_for_termination()
 
 if __name__ == '__main__':
