@@ -400,6 +400,82 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
         finally:
             self.release_db_connection(conn)
 
+    def GetBookDetails(self, request, context):
+        conn = self.get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                # Get Book
+                cursor.execute("SELECT id, title, author, isbn, published_year, quantity, quantity_available FROM books WHERE id = %s", (request.id,))
+                book_data = cursor.fetchone()
+                if not book_data:
+                    context.set_code(grpc.StatusCode.NOT_FOUND)
+                    context.set_details("Book not found")
+                    return library_pb2.GetBookDetailsResponse()
+
+                book_pb = library_pb2.Book(id=str(book_data[0]), title=book_data[1], author=book_data[2], isbn=book_data[3], published_year=book_data[4], quantity=book_data[5], quantity_available=book_data[6])
+
+                # Get Active Borrowings
+                cursor.execute("""
+                    SELECT b.id, b.borrow_date, b.due_date, m.id, m.name
+                    FROM borrowings b
+                    JOIN members m ON b.member_id = m.id
+                    WHERE b.book_id = %s AND b.return_date IS NULL
+                """, (request.id,))
+
+                borrowings_list = []
+                for row in cursor.fetchall():
+                    borrow_date_ts = Timestamp(); borrow_date_ts.FromDatetime(row[1])
+                    due_date_ts = Timestamp(); due_date_ts.FromDatetime(row[2])
+                    borrowings_list.append(library_pb2.BorrowingDetails(
+                        borrowing_id=str(row[0]),
+                        borrow_date=borrow_date_ts,
+                        due_date=due_date_ts,
+                        member_id=str(row[3]),
+                        member_name=row[4]
+                    ))
+
+                return library_pb2.GetBookDetailsResponse(book=book_pb, active_borrowings=borrowings_list)
+        finally:
+            self.release_db_connection(conn)
+
+    def GetMemberDetails(self, request, context):
+        conn = self.get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                # Get Member
+                cursor.execute("SELECT id, name, email, phone FROM members WHERE id = %s", (request.id,))
+                member_data = cursor.fetchone()
+                if not member_data:
+                    context.set_code(grpc.StatusCode.NOT_FOUND)
+                    context.set_details("Member not found")
+                    return library_pb2.GetMemberDetailsResponse()
+
+                member_pb = library_pb2.Member(id=str(member_data[0]), name=member_data[1], email=member_data[2], phone=member_data[3])
+
+                # Get Active Borrowings
+                cursor.execute("""
+                    SELECT b.id, b.borrow_date, b.due_date, bk.id, bk.title
+                    FROM borrowings b
+                    JOIN books bk ON b.book_id = bk.id
+                    WHERE b.member_id = %s AND b.return_date IS NULL
+                """, (request.id,))
+
+                borrowings_list = []
+                for row in cursor.fetchall():
+                    borrow_date_ts = Timestamp(); borrow_date_ts.FromDatetime(row[1])
+                    due_date_ts = Timestamp(); due_date_ts.FromDatetime(row[2])
+                    borrowings_list.append(library_pb2.BorrowingDetails(
+                        borrowing_id=str(row[0]),
+                        borrow_date=borrow_date_ts,
+                        due_date=due_date_ts,
+                        book_id=str(row[3]),
+                        book_title=row[4]
+                    ))
+
+                return library_pb2.GetMemberDetailsResponse(member=member_pb, active_borrowings=borrowings_list)
+        finally:
+            self.release_db_connection(conn)
+
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

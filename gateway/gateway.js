@@ -85,6 +85,16 @@ app.post('/books/:id/stock', (req, res) => {
     });
 });
 
+app.get('/books/:id/details', (req, res) => {
+    client.getBookDetails({ id: req.params.id }, (error, response) => {
+        if (error) {
+            res.status(500).send(error);
+        } else {
+            res.send(response);
+        }
+    });
+});
+
 // Member endpoints
 app.post('/members', (req, res) => {
     client.createMember(req.body, (error, response) => {
@@ -129,6 +139,16 @@ app.put('/members/:id', (req, res) => {
 
 app.delete('/members/:id', (req, res) => {
     client.deleteMember({ id: req.params.id }, (error, response) => {
+        if (error) {
+            res.status(500).send(error);
+        } else {
+            res.send(response);
+        }
+    });
+});
+
+app.get('/members/:id/details', (req, res) => {
+    client.getMemberDetails({ id: req.params.id }, (error, response) => {
         if (error) {
             res.status(500).send(error);
         } else {

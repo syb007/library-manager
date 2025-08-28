@@ -26,6 +26,10 @@ service Library {
   rpc BorrowBook(BorrowBookRequest) returns (Borrowing);
   rpc ReturnBook(ReturnBookRequest) returns (Borrowing);
   rpc ListBorrowedBooks(ListBorrowedBooksRequest) returns (ListBorrowedBooksResponse);
+
+  // Detail RPCs
+  rpc GetBookDetails(GetBookRequest) returns (GetBookDetailsResponse);
+  rpc GetMemberDetails(GetMemberRequest) returns (GetMemberDetailsResponse);
 }
 
 // Book message
@@ -145,4 +149,32 @@ message ListBorrowedBooksRequest {
 
 message ListBorrowedBooksResponse {
     repeated Borrowing borrowings = 1;
+}
+
+// --- Detail Messages ---
+
+message BorrowingDetails {
+  // From Borrowing
+  string borrowing_id = 1;
+  google.protobuf.Timestamp borrow_date = 2;
+  google.protobuf.Timestamp return_date = 3;
+  google.protobuf.Timestamp due_date = 4;
+
+  // Joined from Book
+  string book_id = 5;
+  string book_title = 6;
+
+  // Joined from Member
+  string member_id = 7;
+  string member_name = 8;
+}
+
+message GetBookDetailsResponse {
+  Book book = 1;
+  repeated BorrowingDetails active_borrowings = 2;
+}
+
+message GetMemberDetailsResponse {
+  Member member = 1;
+  repeated BorrowingDetails active_borrowings = 2;
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './MemberList.css';
 import EditMember from './EditMember';
+import DetailsModal from './DetailsModal';
 
 const MemberList = () => {
     const [members, setMembers] = useState([]);
@@ -9,6 +10,7 @@ const MemberList = () => {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [editingMember, setEditingMember] = useState(null);
+    const [detailsData, setDetailsData] = useState(null);
 
     const fetchMembers = async () => {
         try {
@@ -53,8 +55,19 @@ const MemberList = () => {
         setEditingMember(member);
     };
 
+    const handleDetailsClick = async (memberId) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/members/${memberId}/details`);
+            setDetailsData(response.data);
+        } catch (error) {
+            console.error('Error fetching member details:', error);
+            alert('Failed to fetch member details.');
+        }
+    };
+
     const handleCloseModal = () => {
         setEditingMember(null);
+        setDetailsData(null);
     };
 
     const handleMemberUpdated = () => {
@@ -111,6 +124,7 @@ const MemberList = () => {
                                 <td>{member.email}</td>
                                 <td>{member.phone}</td>
                                 <td>
+                                    <button onClick={() => handleDetailsClick(member.id)}>Details</button>
                                     <button onClick={() => handleEditClick(member)}>Edit</button>
                                     <button onClick={() => handleDeleteMember(member.id)}>Delete</button>
                                 </td>
@@ -125,6 +139,14 @@ const MemberList = () => {
                     member={editingMember}
                     onClose={handleCloseModal}
                     onMemberUpdated={handleMemberUpdated}
+                />
+            )}
+
+            {detailsData && (
+                <DetailsModal
+                    title="Member Details"
+                    data={detailsData}
+                    onClose={handleCloseModal}
                 />
             )}
         </div>

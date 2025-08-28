@@ -3,11 +3,13 @@ import axios from 'axios';
 import './BookList.css';
 import EditBook from './EditBook';
 import AdjustStock from './AdjustStock';
+import DetailsModal from './DetailsModal';
 
 const BookList = () => {
     const [books, setBooks] = useState([]);
     const [editingBook, setEditingBook] = useState(null);
     const [adjustingStockBook, setAdjustingStockBook] = useState(null);
+    const [detailsData, setDetailsData] = useState(null);
 
     const fetchBooks = async () => {
         try {
@@ -30,9 +32,20 @@ const BookList = () => {
         setAdjustingStockBook(book);
     };
 
+    const handleDetailsClick = async (bookId) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/books/${bookId}/details`);
+            setDetailsData(response.data);
+        } catch (error) {
+            console.error('Error fetching book details:', error);
+            alert('Failed to fetch book details.');
+        }
+    };
+
     const handleCloseModal = () => {
         setEditingBook(null);
         setAdjustingStockBook(null);
+        setDetailsData(null);
     };
 
     const handleBookUpdated = () => {
@@ -67,6 +80,7 @@ const BookList = () => {
                             <td>{book.quantity}</td>
                             <td>{book.quantity_available}</td>
                             <td>
+                                <button onClick={() => handleDetailsClick(book.id)}>Details</button>
                                 <button onClick={() => handleEditClick(book)}>Edit</button>
                                 <button onClick={() => handleAdjustStockClick(book)}>Adjust Stock</button>
                                 <button onClick={() => handleDeleteBook(book.id)}>Delete</button>
@@ -89,6 +103,14 @@ const BookList = () => {
                     book={adjustingStockBook}
                     onClose={handleCloseModal}
                     onBookUpdated={handleBookUpdated}
+                />
+            )}
+
+            {detailsData && (
+                <DetailsModal
+                    title="Book Details"
+                    data={detailsData}
+                    onClose={handleCloseModal}
                 />
             )}
         </div>
