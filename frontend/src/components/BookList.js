@@ -61,6 +61,7 @@ const BookList = () => {
                             <td>{book.quantity_available}</td>
                             <td>
                                 <button onClick={() => handleEditClick(book)}>Edit</button>
+                                <button onClick={() => handleDeleteBook(book.id)}>Delete</button>
                             </td>
                         </tr>
                     ))}
@@ -76,6 +77,19 @@ const BookList = () => {
             )}
         </div>
     );
+
+    async function handleDeleteBook(id) {
+        if (window.confirm('Are you sure you want to delete this book? This action cannot be undone.')) {
+            try {
+                await axios.delete(`http://localhost:3000/books/${id}`);
+                alert('Book deleted successfully!');
+                fetchBooks(); // Refresh the list
+            } catch (error) {
+                console.error('Error deleting book:', error);
+                alert('Failed to delete book.');
+            }
+        }
+    }
 };
 
 export default BookList;
