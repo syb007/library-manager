@@ -255,10 +255,22 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
         conn = self.get_db_connection()
         try:
             with conn.cursor() as cursor:
-                # Check if the book is available
+                # Check if member exists
+                cursor.execute("SELECT id FROM members WHERE id = %s", (request.member_id,))
+                if not cursor.fetchone():
+                    context.set_code(grpc.StatusCode.NOT_FOUND)
+                    context.set_details("Member not found.")
+                    return library_pb2.Borrowing()
+
+                # Check if book exists and is available, and lock the row
                 cursor.execute("SELECT quantity_available FROM books WHERE id = %s FOR UPDATE", (request.book_id,))
                 result = cursor.fetchone()
-                if not result or result[0] < 1:
+                if not result:
+                    context.set_code(grpc.StatusCode.NOT_FOUND)
+                    context.set_details("Book not found.")
+                    return library_pb2.Borrowing()
+
+                if result[0] < 1:
                     context.set_code(grpc.StatusCode.FAILED_PRECONDITION)
                     context.set_details("No copies of the book are available for borrowing.")
                     return library_pb2.Borrowing()
