@@ -1,12 +1,14 @@
 import React from 'react';
-import './EditModal.css'; // Reusing the modal styles
+import {
+    Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography,
+    List, ListItem, ListItemText, Divider
+} from '@mui/material';
 
 const DetailsModal = ({ title, data, onClose }) => {
     if (!data) {
         return null;
     }
 
-    // Helper to format timestamp from proto
     const formatTimestamp = (ts) => {
         if (!ts) return 'N/A';
         const date = new Date(ts.seconds * 1000 + ts.nanos / 1000000);
@@ -14,53 +16,49 @@ const DetailsModal = ({ title, data, onClose }) => {
     };
 
     return (
-        <div className="modal-overlay">
-            <div className="modal-content">
-                <h2>{title}</h2>
+        <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogContent dividers>
                 {data.book && (
-                    <div>
-                        <h3>Book Details</h3>
-                        <p><strong>Title:</strong> {data.book.title}</p>
-                        <p><strong>Author:</strong> {data.book.author}</p>
-                        <p><strong>Total Copies:</strong> {data.book.quantity}</p>
-                        <p><strong>Available:</strong> {data.book.quantity_available}</p>
-                    </div>
+                    <>
+                        <Typography variant="h6" gutterBottom>Book Details</Typography>
+                        <Typography><strong>Title:</strong> {data.book.title}</Typography>
+                        <Typography><strong>Author:</strong> {data.book.author}</Typography>
+                        <Typography><strong>Total Copies:</strong> {data.book.quantity}</Typography>
+                        <Typography><strong>Available:</strong> {data.book.quantity_available}</Typography>
+                        <Divider sx={{ my: 2 }} />
+                    </>
                 )}
                 {data.member && (
-                     <div>
-                        <h3>Member Details</h3>
-                        <p><strong>Name:</strong> {data.member.name}</p>
-                        <p><strong>Email:</strong> {data.member.email}</p>
-                        <p><strong>Phone:</strong> {data.member.phone}</p>
-                    </div>
+                     <>
+                        <Typography variant="h6" gutterBottom>Member Details</Typography>
+                        <Typography><strong>Name:</strong> {data.member.name}</Typography>
+                        <Typography><strong>Email:</strong> {data.member.email}</Typography>
+                        <Typography><strong>Phone:</strong> {data.member.phone}</Typography>
+                        <Divider sx={{ my: 2 }} />
+                    </>
                 )}
 
-                {data.active_borrowings && data.active_borrowings.length > 0 && (
-                    <div>
-                        <h4>Active Borrowings</h4>
-                        <ul>
-                            {data.active_borrowings.map(b => (
-                                <li key={b.borrowing_id}>
-                                    {b.book_title && `Book: ${b.book_title} (ID: ${b.book_id})`}
-                                    {b.member_name && `Member: ${b.member_name} (ID: ${b.member_id})`}
-                                    <br />
-                                    Borrowed on: {formatTimestamp(b.borrow_date)},
-                                    Due by: {formatTimestamp(b.due_date)}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                <Typography variant="h6" gutterBottom>Active Borrowings</Typography>
+                {data.active_borrowings && data.active_borrowings.length > 0 ? (
+                    <List dense>
+                        {data.active_borrowings.map(b => (
+                            <ListItem key={b.borrowing_id}>
+                                <ListItemText
+                                    primary={b.book_title ? `Book: ${b.book_title}` : `Member: ${b.member_name}`}
+                                    secondary={`Borrowed: ${formatTimestamp(b.borrow_date)}, Due: ${formatTimestamp(b.due_date)}`}
+                                />
+                            </ListItem>
+                        ))}
+                    </List>
+                ) : (
+                    <Typography>No active borrowings.</Typography>
                 )}
-
-                 {data.active_borrowings && data.active_borrowings.length === 0 && (
-                    <p>No active borrowings.</p>
-                 )}
-
-                <div className="modal-actions">
-                    <button type="button" onClick={onClose}>Close</button>
-                </div>
-            </div>
-        </div>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onClose}>Close</Button>
+            </DialogActions>
+        </Dialog>
     );
 };
 

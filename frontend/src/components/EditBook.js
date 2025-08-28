@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './EditModal.css';
+import {
+    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+    Button, TextField, Box
+} from '@mui/material';
 
 const EditBook = ({ book, onClose, onBookUpdated }) => {
     const [title, setTitle] = useState('');
@@ -40,45 +43,22 @@ const EditBook = ({ book, onClose, onBookUpdated }) => {
     };
 
     return (
-        <div className="modal-overlay">
-            <div className="modal-content">
-                <h2>Edit Book</h2>
-                <form onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        placeholder="Title"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="text"
-                        placeholder="Author"
-                        value={author}
-                        onChange={(e) => setAuthor(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="text"
-                        placeholder="ISBN"
-                        value={isbn}
-                        onChange={(e) => setIsbn(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="number"
-                        placeholder="Published Year"
-                        value={publishedYear}
-                        onChange={(e) => setPublishedYear(e.target.value)}
-                        required
-                    />
-                    <div className="modal-actions">
-                        <button type="submit">Save Changes</button>
-                        <button type="button" onClick={onClose}>Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <Dialog open={true} onClose={onClose} PaperProps={{ component: 'form', onSubmit: handleSubmit }}>
+            <DialogTitle>Edit Book</DialogTitle>
+            <DialogContent>
+                <DialogContentText sx={{ mb: 2 }}>
+                    Please edit the details of the book below.
+                </DialogContentText>
+                <TextField margin="dense" required fullWidth label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+                <TextField margin="dense" required fullWidth label="Author" value={author} onChange={(e) => setAuthor(e.target.value)} />
+                <TextField margin="dense" required fullWidth label="ISBN" value={isbn} onChange={(e) => setIsbn(e.target.value)} />
+                <TextField margin="dense" required fullWidth label="Published Year" type="number" value={publishedYear} onChange={(e) => setPublishedYear(e.target.value)} />
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onClose}>Cancel</Button>
+                <Button type="submit" variant="contained">Save Changes</Button>
+            </DialogActions>
+        </Dialog>
     );
 };
 

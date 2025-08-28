@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './EditModal.css';
+import {
+    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+    Button, TextField, Typography
+} from '@mui/material';
 
 const AdjustStock = ({ book, onClose, onBookUpdated }) => {
     const [newQuantity, setNewQuantity] = useState(0);
@@ -32,28 +35,28 @@ const AdjustStock = ({ book, onClose, onBookUpdated }) => {
     };
 
     return (
-        <div className="modal-overlay">
-            <div className="modal-content">
-                <h2>Adjust Stock for "{book.title}"</h2>
-                <p>Current Total Quantity: {book.quantity}</p>
-                <p>Currently Available: {book.quantity_available}</p>
-                <form onSubmit={handleSubmit}>
-                    <label htmlFor="new_quantity">New Total Quantity:</label>
-                    <input
-                        id="new_quantity"
-                        type="number"
-                        value={newQuantity}
-                        onChange={(e) => setNewQuantity(e.target.value)}
-                        required
-                        min="0"
-                    />
-                    <div className="modal-actions">
-                        <button type="submit">Update Stock</button>
-                        <button type="button" onClick={onClose}>Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <Dialog open={true} onClose={onClose} PaperProps={{ component: 'form', onSubmit: handleSubmit }}>
+            <DialogTitle>Adjust Stock for "{book.title}"</DialogTitle>
+            <DialogContent>
+                <Typography variant="body2" sx={{ mb: 2 }}>
+                    Current Total: {book.quantity}, Available: {book.quantity_available}
+                </Typography>
+                <TextField
+                    margin="dense"
+                    required
+                    fullWidth
+                    label="New Total Quantity"
+                    type="number"
+                    value={newQuantity}
+                    onChange={(e) => setNewQuantity(parseInt(e.target.value, 10) || 0)}
+                    InputProps={{ inputProps: { min: 0 } }}
+                />
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onClose}>Cancel</Button>
+                <Button type="submit" variant="contained">Update Stock</Button>
+            </DialogActions>
+        </Dialog>
     );
 };
 

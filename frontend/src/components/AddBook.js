@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './AddBook.css';
+import { Paper, Box, Typography, TextField, Button } from '@mui/material';
 
 const AddBook = () => {
     const [title, setTitle] = useState('');
@@ -32,48 +32,30 @@ const AddBook = () => {
     };
 
     return (
-        <div className="add-book-container">
-            <h2>Add a New Book</h2>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    placeholder="Title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+        <Paper sx={{ p: 2, maxWidth: '600px', margin: 'auto' }}>
+            <Typography variant="h6" component="h2" gutterBottom>
+                Add a New Book
+            </Typography>
+            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+                <TextField margin="normal" required fullWidth label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+                <TextField margin="normal" required fullWidth label="Author" value={author} onChange={(e) => setAuthor(e.target.value)} />
+                <TextField margin="normal" required fullWidth label="ISBN" value={isbn} onChange={(e) => setIsbn(e.target.value)} />
+                <TextField margin="normal" required fullWidth label="Published Year" type="number" value={publishedYear} onChange={(e) => setPublishedYear(e.target.value)} />
+                <TextField
+                    margin="normal"
                     required
-                />
-                <input
-                    type="text"
-                    placeholder="Author"
-                    value={author}
-                    onChange={(e) => setAuthor(e.target.value)}
-                    required
-                />
-                <input
-                    type="text"
-                    placeholder="ISBN"
-                    value={isbn}
-                    onChange={(e) => setIsbn(e.target.value)}
-                    required
-                />
-                <input
+                    fullWidth
+                    label="Quantity"
                     type="number"
-                    placeholder="Published Year"
-                    value={publishedYear}
-                    onChange={(e) => setPublishedYear(e.target.value)}
-                    required
-                />
-                <input
-                    type="number"
-                    placeholder="Quantity"
                     value={quantity}
                     onChange={(e) => setQuantity(parseInt(e.target.value, 10) || 1)}
-                    required
-                    min="1"
+                    InputProps={{ inputProps: { min: 1 } }}
                 />
-                <button type="submit">Add Book</button>
-            </form>
-        </div>
+                <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+                    Add Book
+                </Button>
+            </Box>
+        </Paper>
     );
 };
 

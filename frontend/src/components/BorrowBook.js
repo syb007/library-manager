@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './BorrowBook.css';
+import { Paper, Box, Typography, TextField, Button, Grid } from '@mui/material';
 
 const BorrowBook = () => {
     const [borrowBookId, setBorrowBookId] = useState('');
@@ -20,7 +20,8 @@ const BorrowBook = () => {
             setBorrowMemberId('');
         } catch (error) {
             console.error('Error borrowing book:', error);
-            alert('Failed to borrow book.');
+            const errorMessage = error.response?.data?.details || 'Failed to borrow book.';
+            alert(errorMessage);
         }
     };
 
@@ -36,54 +37,42 @@ const BorrowBook = () => {
             setReturnMemberId('');
         } catch (error) {
             console.error('Error returning book:', error);
-            alert('Failed to return book.');
+            const errorMessage = error.response?.data?.details || 'Failed to return book.';
+            alert(errorMessage);
         }
     };
 
     return (
-        <div className="borrow-return-container">
-            <div className="form-container">
-                <h2>Borrow a Book</h2>
-                <form onSubmit={handleBorrow}>
-                    <input
-                        type="text"
-                        placeholder="Book ID"
-                        value={borrowBookId}
-                        onChange={(e) => setBorrowBookId(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="text"
-                        placeholder="Member ID"
-                        value={borrowMemberId}
-                        onChange={(e) => setBorrowMemberId(e.target.value)}
-                        required
-                    />
-                    <button type="submit">Borrow Book</button>
-                </form>
-            </div>
-
-            <div className="form-container">
-                <h2>Return a Book</h2>
-                <form onSubmit={handleReturn}>
-                    <input
-                        type="text"
-                        placeholder="Book ID"
-                        value={returnBookId}
-                        onChange={(e) => setReturnBookId(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="text"
-                        placeholder="Member ID"
-                        value={returnMemberId}
-                        onChange={(e) => setReturnMemberId(e.target.value)}
-                        required
-                    />
-                    <button type="submit">Return Book</button>
-                </form>
-            </div>
-        </div>
+        <Grid container spacing={4} justifyContent="center">
+            <Grid item xs={12} md={5}>
+                <Paper sx={{ p: 3 }}>
+                    <Typography variant="h6" component="h2" gutterBottom>
+                        Borrow a Book
+                    </Typography>
+                    <Box component="form" onSubmit={handleBorrow} noValidate sx={{ mt: 1 }}>
+                        <TextField margin="normal" required fullWidth label="Book ID" value={borrowBookId} onChange={(e) => setBorrowBookId(e.target.value)} />
+                        <TextField margin="normal" required fullWidth label="Member ID" value={borrowMemberId} onChange={(e) => setBorrowMemberId(e.target.value)} />
+                        <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+                            Borrow Book
+                        </Button>
+                    </Box>
+                </Paper>
+            </Grid>
+            <Grid item xs={12} md={5}>
+                <Paper sx={{ p: 3 }}>
+                    <Typography variant="h6" component="h2" gutterBottom>
+                        Return a Book
+                    </Typography>
+                    <Box component="form" onSubmit={handleReturn} noValidate sx={{ mt: 1 }}>
+                        <TextField margin="normal" required fullWidth label="Book ID" value={returnBookId} onChange={(e) => setReturnBookId(e.target.value)} />
+                        <TextField margin="normal" required fullWidth label="Member ID" value={returnMemberId} onChange={(e) => setReturnMemberId(e.target.value)} />
+                        <Button type="submit" fullWidth variant="contained" color="secondary" sx={{ mt: 3, mb: 2 }}>
+                            Return Book
+                        </Button>
+                    </Box>
+                </Paper>
+            </Grid>
+        </Grid>
     );
 };
 

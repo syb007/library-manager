@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './EditModal.css';
+import {
+    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+    Button, TextField
+} from '@mui/material';
 
 const EditMember = ({ member, onClose, onMemberUpdated }) => {
     const [name, setName] = useState('');
@@ -37,37 +40,21 @@ const EditMember = ({ member, onClose, onMemberUpdated }) => {
     };
 
     return (
-        <div className="modal-overlay">
-            <div className="modal-content">
-                <h2>Edit Member</h2>
-                <form onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        placeholder="Name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="text"
-                        placeholder="Phone"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                    />
-                    <div className="modal-actions">
-                        <button type="submit">Save Changes</button>
-                        <button type="button" onClick={onClose}>Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <Dialog open={true} onClose={onClose} PaperProps={{ component: 'form', onSubmit: handleSubmit }}>
+            <DialogTitle>Edit Member</DialogTitle>
+            <DialogContent>
+                <DialogContentText sx={{ mb: 2 }}>
+                    Please edit the details of the member below.
+                </DialogContentText>
+                <TextField margin="dense" required fullWidth label="Name" value={name} onChange={(e) => setName(e.target.value)} />
+                <TextField margin="dense" required fullWidth label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <TextField margin="dense" fullWidth label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onClose}>Cancel</Button>
+                <Button type="submit" variant="contained">Save Changes</Button>
+            </DialogActions>
+        </Dialog>
     );
 };
 
