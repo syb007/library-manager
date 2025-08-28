@@ -30,6 +30,8 @@ const BookList = () => {
                         <th>Author</th>
                         <th>ISBN</th>
                         <th>Published Year</th>
+                        <th>Total Copies</th>
+                        <th>Available</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -40,6 +42,8 @@ const BookList = () => {
                             <td>{book.author}</td>
                             <td>{book.isbn}</td>
                             <td>{book.published_year}</td>
+                            <td>{book.quantity}</td>
+                            <td>{book.quantity_available}</td>
                         </tr>
                     ))}
                 </tbody>

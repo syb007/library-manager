@@ -34,6 +34,8 @@ message Book {
   string author = 3;
   string isbn = 4;
   int32 published_year = 5;
+  int32 quantity = 6;
+  int32 quantity_available = 7;
 }
 
 // Member message
@@ -51,6 +53,7 @@ message Borrowing {
     string member_id = 3;
     google.protobuf.Timestamp borrow_date = 4;
     google.protobuf.Timestamp return_date = 5;
+    google.protobuf.Timestamp due_date = 6;
 }
 
 
@@ -62,6 +65,7 @@ message CreateBookRequest {
   string author = 2;
   string isbn = 3;
   int32 published_year = 4;
+  int32 quantity = 5;
 }
 
 message GetBookRequest {

@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import library_pb2
 import library_pb2_grpc
 from google.protobuf.timestamp_pb2 import Timestamp
+from datetime import datetime, timedelta
 
 load_dotenv()
 
@@ -27,17 +28,26 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
     def release_db_connection(self, conn):
         db_pool.putconn(conn)
 
+    # --- Book RPCs ---
     def CreateBook(self, request, context):
         conn = self.get_db_connection()
         try:
             with conn.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO books (title, author, isbn, published_year) VALUES (%s, %s, %s, %s) RETURNING id",
-                    (request.title, request.author, request.isbn, request.published_year)
+                    "INSERT INTO books (title, author, isbn, published_year, quantity, quantity_available) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
+                    (request.title, request.author, request.isbn, request.published_year, request.quantity, request.quantity)
                 )
                 book_id = cursor.fetchone()[0]
                 conn.commit()
-                return library_pb2.Book(id=str(book_id), title=request.title, author=request.author, isbn=request.isbn, published_year=request.published_year)
+                return library_pb2.Book(
+                    id=str(book_id),
+                    title=request.title,
+                    author=request.author,
+                    isbn=request.isbn,
+                    published_year=request.published_year,
+                    quantity=request.quantity,
+                    quantity_available=request.quantity
+                )
         finally:
             self.release_db_connection(conn)
 
@@ -45,10 +55,18 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
         conn = self.get_db_connection()
         try:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT id, title, author, isbn, published_year FROM books WHERE id = %s", (request.id,))
+                cursor.execute("SELECT id, title, author, isbn, published_year, quantity, quantity_available FROM books WHERE id = %s", (request.id,))
                 book = cursor.fetchone()
                 if book:
-                    return library_pb2.Book(id=str(book[0]), title=book[1], author=book[2], isbn=book[3], published_year=book[4])
+                    return library_pb2.Book(
+                        id=str(book[0]),
+                        title=book[1],
+                        author=book[2],
+                        isbn=book[3],
+                        published_year=book[4],
+                        quantity=book[5],
+                        quantity_available=book[6]
+                    )
                 else:
                     context.set_code(grpc.StatusCode.NOT_FOUND)
                     context.set_details("Book not found")
@@ -60,15 +78,24 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
         conn = self.get_db_connection()
         try:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT id, title, author, isbn, published_year FROM books")
+                cursor.execute("SELECT id, title, author, isbn, published_year, quantity, quantity_available FROM books")
                 books = cursor.fetchall()
                 book_list = []
                 for book in books:
-                    book_list.append(library_pb2.Book(id=str(book[0]), title=book[1], author=book[2], isbn=book[3], published_year=book[4]))
+                    book_list.append(library_pb2.Book(
+                        id=str(book[0]),
+                        title=book[1],
+                        author=book[2],
+                        isbn=book[3],
+                        published_year=book[4],
+                        quantity=book[5],
+                        quantity_available=book[6]
+                    ))
                 return library_pb2.ListBooksResponse(books=book_list)
         finally:
             self.release_db_connection(conn)
 
+    # --- Member RPCs ---
     def CreateMember(self, request, context):
         conn = self.get_db_connection()
         try:
@@ -134,33 +161,51 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
         finally:
             self.release_db_connection(conn)
 
+    # --- Borrowing RPCs ---
     def BorrowBook(self, request, context):
         conn = self.get_db_connection()
         try:
             with conn.cursor() as cursor:
                 # Check if the book is available
-                cursor.execute("SELECT available FROM books WHERE id = %s", (request.book_id,))
+                cursor.execute("SELECT quantity_available FROM books WHERE id = %s FOR UPDATE", (request.book_id,))
                 result = cursor.fetchone()
-                if not result or not result[0]:
+                if not result or result[0] < 1:
                     context.set_code(grpc.StatusCode.FAILED_PRECONDITION)
-                    context.set_details("Book is not available for borrowing")
+                    context.set_details("No copies of the book are available for borrowing.")
                     return library_pb2.Borrowing()
 
+                # Decrement available quantity
+                cursor.execute("UPDATE books SET quantity_available = quantity_available - 1 WHERE id = %s", (request.book_id,))
+
                 # Record the borrowing
-                borrow_date = Timestamp()
-                borrow_date.GetCurrentTime()
+                borrow_date = datetime.now()
+                due_date = borrow_date + timedelta(days=14)
+
+                borrow_date_ts = Timestamp()
+                borrow_date_ts.FromDatetime(borrow_date)
+                due_date_ts = Timestamp()
+                due_date_ts.FromDatetime(due_date)
+
                 cursor.execute(
-                    "INSERT INTO borrowings (book_id, member_id, borrow_date) VALUES (%s, %s, %s) RETURNING id",
-                    (request.book_id, request.member_id, borrow_date.ToDatetime())
+                    "INSERT INTO borrowings (book_id, member_id, borrow_date, due_date) VALUES (%s, %s, %s, %s) RETURNING id",
+                    (request.book_id, request.member_id, borrow_date, due_date)
                 )
                 borrowing_id = cursor.fetchone()[0]
 
-                # Mark the book as unavailable
-                cursor.execute("UPDATE books SET available = FALSE WHERE id = %s", (request.book_id,))
-
                 conn.commit()
 
-                return library_pb2.Borrowing(id=str(borrowing_id), book_id=request.book_id, member_id=request.member_id, borrow_date=borrow_date)
+                return library_pb2.Borrowing(
+                    id=str(borrowing_id),
+                    book_id=request.book_id,
+                    member_id=request.member_id,
+                    borrow_date=borrow_date_ts,
+                    due_date=due_date_ts
+                )
+        except Exception as e:
+            conn.rollback()
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(f"An error occurred: {e}")
+            return library_pb2.Borrowing()
         finally:
             self.release_db_connection(conn)
 
@@ -173,44 +218,50 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
                     "SELECT id FROM borrowings WHERE book_id = %s AND member_id = %s AND return_date IS NULL",
                     (request.book_id, request.member_id)
                 )
-                borrowing_id = cursor.fetchone()
-                if not borrowing_id:
+                borrowing_record = cursor.fetchone()
+                if not borrowing_record:
                     context.set_code(grpc.StatusCode.NOT_FOUND)
-                    context.set_details("No active borrowing record found for this book and member")
+                    context.set_details("No active borrowing record found for this book and member.")
                     return library_pb2.Borrowing()
 
-                borrowing_id = borrowing_id[0]
+                borrowing_id = borrowing_record[0]
 
                 # Update the return date
-                return_date = Timestamp()
-                return_date.GetCurrentTime()
+                return_date = datetime.now()
                 cursor.execute(
                     "UPDATE borrowings SET return_date = %s WHERE id = %s",
-                    (return_date.ToDatetime(), borrowing_id)
+                    (return_date, borrowing_id)
                 )
 
-                # Mark the book as available
-                cursor.execute("UPDATE books SET available = TRUE WHERE id = %s", (request.book_id,))
+                # Increment available quantity
+                cursor.execute("UPDATE books SET quantity_available = quantity_available + 1 WHERE id = %s", (request.book_id,))
 
                 conn.commit()
 
-                # Get the updated borrowing record
-                cursor.execute("SELECT book_id, member_id, borrow_date, return_date FROM borrowings WHERE id = %s", (borrowing_id,))
+                # Get the updated borrowing record to return
+                cursor.execute("SELECT book_id, member_id, borrow_date, return_date, due_date FROM borrowings WHERE id = %s", (borrowing_id,))
                 record = cursor.fetchone()
 
-                borrow_timestamp = Timestamp()
-                borrow_timestamp.FromDatetime(record[2])
-                return_timestamp = Timestamp()
-                return_timestamp.FromDatetime(record[3])
-
+                borrow_date_ts = Timestamp()
+                borrow_date_ts.FromDatetime(record[2])
+                return_date_ts = Timestamp()
+                return_date_ts.FromDatetime(record[3])
+                due_date_ts = Timestamp()
+                due_date_ts.FromDatetime(record[4])
 
                 return library_pb2.Borrowing(
                     id=str(borrowing_id),
                     book_id=str(record[0]),
                     member_id=str(record[1]),
-                    borrow_date=borrow_timestamp,
-                    return_date=return_timestamp
+                    borrow_date=borrow_date_ts,
+                    return_date=return_date_ts,
+                    due_date=due_date_ts
                 )
+        except Exception as e:
+            conn.rollback()
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(f"An error occurred: {e}")
+            return library_pb2.Borrowing()
         finally:
             self.release_db_connection(conn)
 
@@ -219,26 +270,30 @@ class LibraryServicer(library_pb2_grpc.LibraryServicer):
         try:
             with conn.cursor() as cursor:
                 cursor.execute(
-                    "SELECT id, book_id, member_id, borrow_date, return_date FROM borrowings WHERE member_id = %s",
+                    "SELECT id, book_id, member_id, borrow_date, return_date, due_date FROM borrowings WHERE member_id = %s",
                     (request.member_id,)
                 )
                 borrowings = cursor.fetchall()
                 borrowing_list = []
                 for borrowing in borrowings:
-                    borrow_date = Timestamp()
-                    borrow_date.FromDatetime(borrowing[3])
-                    return_date = Timestamp()
+                    borrow_date_ts = Timestamp()
+                    borrow_date_ts.FromDatetime(borrowing[3])
+
+                    return_date_ts = None
                     if borrowing[4]:
-                        return_date.FromDatetime(borrowing[4])
-                    else:
-                        return_date = None
+                        return_date_ts = Timestamp()
+                        return_date_ts.FromDatetime(borrowing[4])
+
+                    due_date_ts = Timestamp()
+                    due_date_ts.FromDatetime(borrowing[5])
 
                     borrowing_list.append(library_pb2.Borrowing(
                         id=str(borrowing[0]),
                         book_id=str(borrowing[1]),
                         member_id=str(borrowing[2]),
-                        borrow_date=borrow_date,
-                        return_date=return_date
+                        borrow_date=borrow_date_ts,
+                        return_date=return_date_ts,
+                        due_date=due_date_ts
                     ))
                 return library_pb2.ListBorrowedBooksResponse(borrowings=borrowing_list)
         finally:

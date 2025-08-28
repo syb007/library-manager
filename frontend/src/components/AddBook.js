@@ -7,6 +7,7 @@ const AddBook = () => {
     const [author, setAuthor] = useState('');
     const [isbn, setIsbn] = useState('');
     const [publishedYear, setPublishedYear] = useState('');
+    const [quantity, setQuantity] = useState(1);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -16,12 +17,14 @@ const AddBook = () => {
                 author,
                 isbn,
                 published_year: parseInt(publishedYear),
+                quantity: parseInt(quantity),
             });
             alert('Book added successfully!');
             setTitle('');
             setAuthor('');
             setIsbn('');
             setPublishedYear('');
+            setQuantity(1);
         } catch (error) {
             console.error('Error adding book:', error);
             alert('Failed to add book.');
@@ -59,6 +62,14 @@ const AddBook = () => {
                     value={publishedYear}
                     onChange={(e) => setPublishedYear(e.target.value)}
                     required
+                />
+                <input
+                    type="number"
+                    placeholder="Quantity"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    required
+                    min="1"
                 />
                 <button type="submit">Add Book</button>
             </form>

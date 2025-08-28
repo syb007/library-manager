@@ -4,7 +4,8 @@ CREATE TABLE books (
   author VARCHAR(255) NOT NULL,
   isbn VARCHAR(255) UNIQUE NOT NULL,
   published_year INT,
-  available BOOLEAN DEFAULT TRUE
+  quantity INT NOT NULL DEFAULT 1,
+  quantity_available INT NOT NULL DEFAULT 1
 );
 
 CREATE TABLE members (
@@ -19,5 +20,6 @@ CREATE TABLE borrowings (
   book_id INT REFERENCES books(id),
   member_id INT REFERENCES members(id),
   borrow_date TIMESTAMP NOT NULL,
-  return_date TIMESTAMP
+  return_date TIMESTAMP,
+  due_date TIMESTAMP
 );
